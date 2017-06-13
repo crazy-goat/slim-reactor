@@ -1,0 +1,26 @@
+{
+  "name": "crazygoat/slim-reactor",
+  "description": "React http server with slim framework as backend",
+  "keywords": ["php", "slim", "server", "react"],
+  "type": "library",
+  "require": {
+    "slim/slim": "~3.8",
+    "react/http": "v0.7.0",
+    "php": "~7.1"
+
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Piotr Hałas",
+      "email": "piotr@crazy-goat.com",
+      "homepage": "https://crazy-goat.com"
+    }
+  ],
+  "autoload":
+  {
+    "psr-4": {
+      "CrazyGoat\\SlimReactor\\" : "src/"
+    }
+  }
+}
