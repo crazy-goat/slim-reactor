@@ -4,8 +4,8 @@
   "keywords": ["php", "slim", "server", "react"],
   "type": "library",
   "require": {
-    "slim/slim": "~3.8",
-    "react/http": "v0.7.0",
+    "slim/slim": "^3.1",
+    "react/http": "^0.8.1",
     "php": "~7.1"
 
   },
