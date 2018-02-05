@@ -10,6 +10,7 @@ use React\Socket\Server as SocketServer;
 use Slim\App;
 use Slim\Http\Environment;
 use Slim\Http\Request;
+use Slim\Http\Response;
 
 class SlimReactor
 {
@@ -43,7 +44,7 @@ class SlimReactor
     private function createServer(string $uri) : void
     {
         $this->loop = Factory::create();
-        $this->server = new HttpServer($this->getGallback());
+        $this->server = new HttpServer($this->getCallback());
         $socket = new SocketServer($uri, $this->loop);
         $this->server->listen($socket);
     }
@@ -51,13 +52,10 @@ class SlimReactor
     /**
      * @return \Closure
      */
-    private function getGallback()
+    private function getCallback()
     {
         return function (ServerRequestInterface $request) {
-            return $this->app->process(
-                $this->createSlimRequest($request),
-                new \Slim\Http\Response()
-            );
+            return $this->app->process($this->createSlimRequest($request), new Response());
         };
     }
 
