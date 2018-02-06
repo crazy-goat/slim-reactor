@@ -2,11 +2,13 @@
 
 namespace CrazyGoat\SlimReactor;
 
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 use React\Http\Server as HttpServer;
 use React\Socket\Server as SocketServer;
+use RingCentral\Psr7\Stream;
 use Slim\App;
 use Slim\Http\Environment;
 use Slim\Http\Request;
@@ -33,17 +35,24 @@ class SlimReactor
     private $socket;
 
     /**
-     * @var array
+     * @var string|null
      */
-    private $options;
+    private $staticContentPath = null;
+
+    /**
+     * @var bool
+     */
+    private $convertToSlim = true;
 
     public function __construct(App $app, array $options = [])
     {
         $this->app = $app;
-        $this->options = $this->getOptions($options);
-        $this->loop = ($this->options['loopInterface'] instanceof LoopInterface) ?
-            $this->options['loopInterface'] : Factory::create();
-        $this->createServer($this->options['socket']);
+        $options = $this->mergeOptions($options);
+        $this->loop = ($options['loopInterface'] instanceof LoopInterface) ?
+            $options['loopInterface'] : Factory::create();
+        $this->staticContentPath = realpath(rtrim($options['staticContentPath'], DIRECTORY_SEPARATOR));
+        $this->convertToSlim = $options['convertToSlim'];
+        $this->createServer($options['socket']);
     }
 
     /**
@@ -54,13 +63,14 @@ class SlimReactor
         return $this->socket;
     }
 
-    private function getOptions(array $options) : array
+    private function mergeOptions(array $options) : array
     {
         return array_merge(
             [
                 'socket' => '0.0.0.0:0',
                 'loopInterface' => null,
-                'convertToSlim' => true
+                'convertToSlim' => true,
+                'staticContentPath' => null
             ],
             $options
         );
@@ -87,10 +97,36 @@ class SlimReactor
     private function getCallback()
     {
         return function (ServerRequestInterface $request) {
-            $request =  $this->options['convertToSlim'] ? $this->createSlimRequest($request) : $request;
-            $response = $this->options['convertToSlim'] ? new Response() : new \React\Http\Response();
+            if ($this->staticContentPath && $response = $this->handleStaticFile($request)) {
+                return $response;
+            }
+
+            list($request, $response) = $this->convertToSlim ?
+                [$this->createSlimRequest($request), new Response()] :
+                [$request, new \React\Http\Response()];
+
             return $this->app->process($request, $response);
         };
+    }
+
+    protected function handleStaticFile(ServerRequestInterface $request) : ?ResponseInterface
+    {
+        $path = trim($request->getUri()->getPath());
+        if ($path == '/') {
+            return null;
+        }
+
+        $path = realpath($this->staticContentPath.$path);
+
+        if (strrpos($path, $this->staticContentPath) === 0) {
+            $response = new \React\Http\Response();
+            return $response->withBody(
+                new Stream(
+                    fopen($path,"r")
+                )
+            );
+        }
+        return null;
     }
 
     /**
