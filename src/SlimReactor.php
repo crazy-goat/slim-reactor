@@ -50,7 +50,8 @@ class SlimReactor
         $options = $this->mergeOptions($options);
         $this->loop = ($options['loopInterface'] instanceof LoopInterface) ?
             $options['loopInterface'] : Factory::create();
-        $this->staticContentPath = realpath(rtrim($options['staticContentPath'], DIRECTORY_SEPARATOR));
+        $this->staticContentPath = !is_null($options['staticContentPath']) ?
+            realpath(rtrim($options['staticContentPath'], DIRECTORY_SEPARATOR)) : null;
         $this->convertToSlim = $options['convertToSlim'];
         $this->createServer($options['socket']);
     }
