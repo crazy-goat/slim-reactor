@@ -27,10 +27,24 @@ class SlimReactor
     /** @var LoopInterface */
     private $loop;
 
-    public function __construct(App $app, string $uri)
+    /**
+     * @var SocketServer
+     */
+    private $socket;
+
+    public function __construct(App $app, string $uri, ?LoopInterface $loop = null)
     {
         $this->app = $app;
+        $this->loop = ($loop instanceof LoopInterface) ? $loop : Factory::create();
         $this->createServer($uri);
+    }
+
+    /**
+     * @return SocketServer
+     */
+    public function getSocket()
+    {
+        return $this->socket;
     }
 
     public function run() : void
@@ -43,10 +57,9 @@ class SlimReactor
      */
     private function createServer(string $uri) : void
     {
-        $this->loop = Factory::create();
         $this->server = new HttpServer($this->getCallback());
-        $socket = new SocketServer($uri, $this->loop);
-        $this->server->listen($socket);
+        $this->socket = new SocketServer($uri, $this->loop);
+        $this->server->listen($this->socket);
     }
 
     /**
