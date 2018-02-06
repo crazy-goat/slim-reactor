@@ -32,11 +32,18 @@ class SlimReactor
      */
     private $socket;
 
-    public function __construct(App $app, string $uri, ?LoopInterface $loop = null)
+    /**
+     * @var array
+     */
+    private $options;
+
+    public function __construct(App $app, array $options = [])
     {
         $this->app = $app;
-        $this->loop = ($loop instanceof LoopInterface) ? $loop : Factory::create();
-        $this->createServer($uri);
+        $this->options = $this->getOptions($options);
+        $this->loop = ($this->options['loopInterface'] instanceof LoopInterface) ?
+            $this->options['loopInterface'] : Factory::create();
+        $this->createServer($this->options['socket']);
     }
 
     /**
@@ -45,6 +52,18 @@ class SlimReactor
     public function getSocket()
     {
         return $this->socket;
+    }
+
+    private function getOptions(array $options) : array
+    {
+        return array_merge(
+            [
+                'socket' => '0.0.0.0:0',
+                'loopInterface' => null,
+                'convertToSlim' => true
+            ],
+            $options
+        );
     }
 
     public function run() : void
@@ -68,7 +87,9 @@ class SlimReactor
     private function getCallback()
     {
         return function (ServerRequestInterface $request) {
-            return $this->app->process($this->createSlimRequest($request), new Response());
+            $request =  $this->options['convertToSlim'] ? $this->createSlimRequest($request) : $request;
+            $response = $this->options['convertToSlim'] ? new Response() : new \React\Http\Response();
+            return $this->app->process($request, $response);
         };
     }
 

@@ -10,8 +10,7 @@ $app->get('/', function (Request $request, Response $response, $args) {
     return $response->write('Hello World!');
 });
 
-$slimReactor  = new SlimReactor($app, isset($argv[1]) ? $argv[1] : '0.0.0.0:0');
+$slimReactor  = new SlimReactor($app);
 echo 'Server is listening on socket: '.$slimReactor->getSocket()->getAddress()."\n";
 
 $slimReactor->run();
-
