@@ -15,7 +15,11 @@ The easiest way to install slim-reactor is download it using composer
 
 Below is minimal code to run slim inside react http server
 
-    $app = new App(); //slim app
+    $app = new App(); // vanilla slim app see limitation
+    
+    //or 
+    
+    $app = new SlimReactorApp(); // 
     
     //some app configuration here
     
@@ -23,6 +27,14 @@ Below is minimal code to run slim inside react http server
     $slimReactor->run();
 
 More examples you will find in [examples directory](https://github.com/crazy-goat/slim-reactor/tree/master/examples).
+
+### Known vanilla Slim App limitations
+The vanilla Slim App (`Slim\App`) was not designed to run as part of React Http server so it has some usage limitations.
+
+ * You can't use optional parameters in routes. Slim `Route` will remember optional attributes between request.
+ Once optional attribute is in request, next request without this attribute will be still in route. **Fixed in SlimReactor**.
+
+Most of these problem were fixed in `SlimReactorApp` and this class is prefered to be used with `SlimReactor`.
 
 ## Configuration
 You can change default parameter, by passing second parameter to ``SlimReactor`` constructor.
