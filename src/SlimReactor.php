@@ -8,7 +8,7 @@ use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 use React\Http\Server as HttpServer;
 use React\Socket\Server as SocketServer;
-use RingCentral\Psr7\Stream;
+use React\Stream\ReadableResourceStream;
 use Slim\App;
 use Slim\Http\Environment;
 use Slim\Http\Request;
@@ -119,12 +119,12 @@ class SlimReactor
 
         $path = realpath($this->staticContentPath.$path);
 
-        if (strrpos($path, $this->staticContentPath) === 0) {
-            $response = new \React\Http\Response();
-            return $response->withBody(
-                new Stream(
-                    fopen($path,"r")
-                )
+        // check if $path is in staticContentPath
+        if (strrpos($path, $this->staticContentPath) === 0 && is_file($path) && is_readable($path)) {
+            return new \React\Http\Response(
+                200,
+                [],
+                new ReadableResourceStream(fopen($path,"r"), $this->loop)
             );
         }
         return null;
