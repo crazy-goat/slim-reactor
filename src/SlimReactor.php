@@ -44,9 +44,9 @@ class SlimReactor
      */
     private $convertToSlim = true;
 
-    public function __construct(App $app, array $options = [])
+    public function __construct(?App $app = null, array $options = [])
     {
-        $this->app = $app;
+        $this->app = $app ?? new App();
         $options = $this->mergeOptions($options);
         $this->loop = ($options['loopInterface'] instanceof LoopInterface) ?
             $options['loopInterface'] : Factory::create();
@@ -150,5 +150,13 @@ class SlimReactor
         }
 
         return $slimRequest;
+    }
+
+    /**
+     * @return App
+     */
+    public function getApp(): App
+    {
+        return $this->app;
     }
 }

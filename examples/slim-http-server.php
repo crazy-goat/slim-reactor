@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 
 use CrazyGoat\SlimReactor\SlimReactor;
